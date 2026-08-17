@@ -1,0 +1,46 @@
+name: 每日网易文创导入
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '仅统计不导入'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    if: ${{ vars.ENABLE_DAILY == 'true' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 运行导入脚本
+        env:
+          IMA_CLIENT_ID: ${{ secrets.IMA_CLIENT_ID }}
+          IMA_API_KEY: ${{ secrets.IMA_API_KEY }}
+          RESULTS_FILE: wy_crawl_results.json
+          DRY_RUN: ${{ inputs.dry_run == 'true' && '1' || '' }}
+        run: python wy_crawl_ima.py
+
+      - name: 提交去重文件更新
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add wy_crawl_results.json
+          git diff --cached --quiet || git commit -m "chore: 更新去重文件 $(date +%Y-%m-%d)"
+          git push
