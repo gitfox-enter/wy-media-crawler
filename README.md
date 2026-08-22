@@ -1,5 +1,7 @@
 # 网易文创资源矩阵 → ima 知识库 自动导入
 
+[![GitHub Actions](https://github.com/gitfox-enter/wy-media-crawler/actions/workflows/daily-import.yml/badge.svg)](https://github.com/gitfox-enter/wy-media-crawler/actions/workflows/daily-import.yml)
+
 自动抓取网易文创资源矩阵（necc）40 个网易号的最新文章，通过 ima Open API 导入到 ima 知识库对应文件夹中。
 
 ## 系统架构
