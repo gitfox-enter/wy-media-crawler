@@ -1,6 +1,6 @@
 # 网易文创资源矩阵 → ima 知识库 自动导入
 
-自动抓取网易文创资源矩阵（necc）30 个网易号的最新文章，导入 ima 知识库。
+自动抓取网易文创资源矩阵（necc）40 个网易号的最新文章，导入 ima 知识库。
 
 ## 配置
 
@@ -26,4 +26,4 @@ Go to Actions → 每日网易文创导入 → Run workflow → 可选 dry_run �
 ## 文件说明
 
 - `wy_crawl_ima.py` — 主抓取导入脚本
-- `wy_crawl_results.json` — 去重基准文件（已导入 1986 篇）
+- `wy_crawl_results.json` — 去重基准文件（已导入 3025 篇）
