@@ -3,7 +3,7 @@
 """网易文创资源矩阵 -> ima 知识库 增量爬虫 + 自动导入 (v3)
 
 数据源: https://www.163.com/dy/media/{TID}.html (SSR 渲染文章列表)
-知识库: WY 文创资源矩阵内容收录
+知识库: 网易文创资源矩阵 (Kxst53hz)
 
 v3 优化:
   1. 配置外置化: ACCOUNT_TIDS / FOLDERS 从 YAML 加载
@@ -13,7 +13,7 @@ v3 优化:
 import json, os, sys, time, re
 import urllib.request, urllib.error
 
-KB_ID = "ma1M4_yaAsSCqjoGYInjPvDI-vviZ9tbzJpVGu0wgn0="
+KB_ID = "Kxst53hzFaX8x2lvWxfpMkMzatfluE5w3vWRGhYwhmg="
 BASE = "https://ima.qq.com/openapi/wiki/v1"
 CLIENT_ID = os.environ.get("IMA_CLIENT_ID") or (open(os.path.expanduser("~/.config/ima/client_id")).read().strip() if os.path.exists(os.path.expanduser("~/.config/ima/client_id")) else "")
 API_KEY = os.environ.get("IMA_API_KEY") or (open(os.path.expanduser("~/.config/ima/api_key")).read().strip() if os.path.exists(os.path.expanduser("~/.config/ima/api_key")) else "")
