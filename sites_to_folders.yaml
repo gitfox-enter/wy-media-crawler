@@ -1,5 +1,4 @@
-# wy-media-crawler 网易号TID与ima文件夹映射
-# 使用方式：cp sites_to_folders.yaml.example sites_to_folders.yaml 并修改
+# 网易文创资源矩阵 站点到ima文件夹映射
 accounts:
   网易哒哒: "T1417494430169"
   网易王三三: "T1478229630669"
@@ -83,3 +82,5 @@ folders:
   网易娱乐: "folder_7496812374029424"
   网易号官方平台: "folder_7496812369813638"
   西北望看台: "folder_7496812369817424"
+
+default_folder: "folder_7496812369813638"
