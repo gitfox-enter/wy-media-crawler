@@ -264,7 +264,7 @@ def main():
                 log("  [DRY] 跳过导入，%d 篇待导入" % len(new_urls))
             continue
         # 分批导入 (10条/批) + 精确重试失败项
-        batch_new_articles = []
+        batch_imported = []
         for i in range(0, len(new_urls), 10):
             batch = new_urls[i:i+10]
             ok_list, fail_list, api_failed = import_urls_batch(folder_id, batch)
@@ -272,6 +272,7 @@ def main():
             total_failed += len(fail_list)
 
             # 精确重试：仅失败项重试，最多重试2次
+            ok2, fail2 = [], []
             if api_failed or fail_list:
                 retry_urls = batch if api_failed else fail_list
                 time.sleep(3)
@@ -279,14 +280,16 @@ def main():
                 total_imported += len(ok2)
                 total_failed += len(fail2)
 
-            # 记录本次导入的 URL
+            # 只记录真正导入成功的 URL，失败的不入去重文件
+            succeeded = set(ok_list + ok2)
             for u in batch:
-                batch_new_articles.append({"url": u, "account": account, "source": "imported_%s" % time.strftime("%Y%m%d")})
+                if u in succeeded:
+                    batch_imported.append({"url": u, "account": account, "source": "imported_%s" % time.strftime("%Y%m%d")})
             time.sleep(1.0)
 
-        # 每账号处理完即更新去重文件
-        if batch_new_articles:
-            all_new_articles.extend(batch_new_articles)
+        # 每账号处理完即更新去重文件（仅包含成功导入的）
+        if batch_imported:
+            all_new_articles.extend(batch_imported)
             combined = existing_articles + all_new_articles
             seen_urls = set()
             dedup_combined = []
