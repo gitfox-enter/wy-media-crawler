@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""网易文创资源矩阵 -> ima 知识库 增量爬虫 + 自动导入 (v3)
+"""网易文创资源矩阵 -> ima 知识库 增量爬虫 + 自动导入 (v4)
 
 数据源: https://www.163.com/dy/media/{TID}.html (SSR 渲染文章列表)
 知识库: 网易文创资源矩阵 (Kxst53hz)
+
+v4 修复:
+  1. ARTICLE_RE 扩展为三种 URL 格式: 新式图文 / 老式 {channel}.163.com 图文 / v/video 视频
+  2. 修复 网易艺术(仅老式URL)、潮向Sense(仅视频URL) 长期 0 导入的问题
+  3. 去重提取统一改用 DOCID_RE
 
 v3 优化:
   1. 配置外置化: ACCOUNT_TIDS / FOLDERS 从 YAML 加载
@@ -93,8 +98,15 @@ def load_config():
         log("使用内置默认文件夹映射 (%d 个)" % len(FOLDERS))
 
 
-# 通用正则 — 匹配所有频道域
-ARTICLE_RE = re.compile(r'https?://www\.163\.com/([a-z0-9]+)/article/([A-Za-z0-9]+)\.html')
+# 通用正则 — 匹配三种 URL 格式:
+#   1) 新式图文: https://www.163.com/{channel}/article/{docid}.html
+#   2) 老式图文: https://{channel}.163.com/{yy}/{mmdd}/{hh}/{docid}.html (如 art.163.com/网易艺术)
+#   3) 视频:     https://www.163.com/v/video/{vid}.html (如 潮向Sense)
+ARTICLE_RE = re.compile(
+    r'https?://www\.163\.com/(?:[a-z0-9]+/article|v/video)/[A-Za-z0-9]+\.html'
+    r'|https?://[a-z0-9]+\.163\.com/\d{2}/\d{4}/\d{2}/[A-Za-z0-9]+\.html'
+)
+DOCID_RE = re.compile(r'/([A-Za-z0-9]+)\.html')
 
 
 def log(msg):
@@ -124,12 +136,13 @@ def fetch_page(url, timeout=20, retries=3):
 
 
 def extract_articles_from_media_page(html):
-    """从 dy/media 页面 SSR HTML 提取文章链接列表 (去重)"""
+    """从 dy/media 页面 SSR HTML 提取 文章/视频 链接列表 (按 docid 去重)"""
     docs = {}
     for m in ARTICLE_RE.finditer(html or ""):
-        channel, docid = m.group(1), m.group(2)
-        if docid and docid not in docs:
-            docs[docid] = "https://www.163.com/%s/article/%s.html" % (channel, docid)
+        url = m.group(0).replace("http://", "https://", 1)
+        dm = DOCID_RE.search(url)
+        if dm and dm.group(1) not in docs:
+            docs[dm.group(1)] = url
     return [docs[d] for d in sorted(docs)]
 
 
@@ -188,7 +201,7 @@ def load_existing_docs(results_file):
                 data = json.load(f)
             for art in data.get("articles", []):
                 url = art.get("url", "")
-                m = re.search(r'/article/([A-Za-z0-9]+)\.html', url)
+                m = DOCID_RE.search(url)
                 if m:
                     docids.add(m.group(1))
                     articles.append(art)
@@ -213,7 +226,7 @@ def save_results(results_file, articles):
 
 def main():
     log("=" * 60)
-    log("网易文创 -> ima 知识库 增量爬取 v3")
+    log("网易文创 -> ima 知识库 增量爬取 v4")
     label = " [DRY-RUN, 仅统计]" if DRY_RUN else ""
     log(label)
     log("知识库: %s" % KB_ID)
@@ -247,7 +260,7 @@ def main():
         # 去重过滤
         new_urls = []
         for u in urls:
-            m = re.search(r'/article/([A-Za-z0-9]+)\.html', u)
+            m = DOCID_RE.search(u)
             if not m:
                 continue
             docid = m.group(1)

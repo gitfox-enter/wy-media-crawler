@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v3] - 当前版本
+## [v4] - 当前版本
+
+### Fixed
+
+- 修复 网易艺术、潮向Sense 长期 0 导入：原正则只匹配新式图文 URL
+
+### Changed
+
+- ARTICLE_RE 扩展为三种 URL 格式：新式图文、老式图文（`{channel}.163.com/{yy}/{mmdd}/{hh}/{docid}.html`）、视频（`www.163.com/v/video/{vid}.html`）
+- 去重提取统一改用 DOCID_RE，跨格式按 docid 去重
+
+## [v3]
 
 ### Added
 
